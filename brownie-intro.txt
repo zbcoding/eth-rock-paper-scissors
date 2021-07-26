@@ -16,6 +16,4 @@ this will run the python script in your test folder
 
 brownie run '.\eth smart contract yield\scripts\deploy.py' --network kovan
 
-After "brownie compile" your contracts, brownie can import the compiled (like for a deploy script)
-e.g. from brownie import YourContractName
 
