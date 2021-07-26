@@ -1,4 +1,4 @@
-LOCAL_BLOCKCHAIN_ENVIRONMENTS = \
+LOCAL_BLOCKCHAIN_ENVIRONMENTS =\
 [
     "mainnet-fork",
     "binance-fork",

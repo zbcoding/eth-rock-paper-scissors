@@ -1,14 +1,15 @@
 import time
 from brownie.network.account import LocalAccount
 import pytest
-from brownie import Yield, ERC20Basic, network
-from scripts import LOCAL_BLOCKCHAIN_ENVIRONMENTS, get_account
+from brownie import ERC20Basic, network
+from scripts.getAccount import get_account
+import LOCAL_BLOCKCHAIN_ENVIRONMENTS
 
 @pytest.fixture
 def deploy_erc20():
 	#Arrange
 	#Act
-	erc20 = Yield.deploy(1000,{"from": get_account()})
+	erc20 = ERC20Basic.deploy(1000,{"from": get_account()})
 	#Assert
 	assert erc20 is not None
 	return erc20
