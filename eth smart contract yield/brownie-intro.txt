@@ -1,0 +1,21 @@
+in an empty folder for development run
+brownie init
+
+brownie compile will compile contract (.sol) to the build folder
+python scripts (like for deployment) go in scripts folders
+contracts go in contracts folder
+interfaces go in interfaces folder
+python tests (pytest) go in tests folder
+
+brownie run deploy.py --network kovan
+this will compile and run the python script (in this case to deploy) on the kovan test network
+
+brownie test path_to_test
+this will run the python script in your test folder
+
+
+brownie run '.\eth smart contract yield\scripts\deploy.py' --network kovan
+
+After "brownie compile" your contracts, brownie can import the compiled (like for a deploy script)
+e.g. from brownie import YourContractName
+
