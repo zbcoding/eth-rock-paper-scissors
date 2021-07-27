@@ -1,5 +1,14 @@
 from brownie import accounts, config, network
-import LOCAL_BLOCKCHAIN_ENVIRONMENTS
+
+LOCAL_BLOCKCHAIN_ENVIRONMENTS =\
+[
+    "mainnet-fork",
+    "binance-fork",
+    "matic-fork",
+    "development",
+    "ganache",
+		"hardhat",
+]
 
 def get_account(index=None, id=None):
     if index:

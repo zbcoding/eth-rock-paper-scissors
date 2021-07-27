@@ -1,19 +1,33 @@
-in an empty folder for development run
-brownie init
+```python -m pip install eth-brownie``` for your Python main or virtual environment
 
-brownie compile will compile contract (.sol) to the build folder
+inside an empty folder for development run
+```brownie init```
+
+```brownie compile``` will compile contract (.sol) to the build folder
 python scripts (like for deployment) go in scripts folders
 contracts go in contracts folder
 interfaces go in interfaces folder
 python tests (pytest) go in tests folder
 
-brownie run deploy.py --network kovan
+```brownie run deploy.py --network kovan```
 this will compile and run the python script (in this case to deploy) on the kovan test network
 
-brownie test path_to_test
+```brownie test path_to_test```
 this will run the python script in your test folder
 
+Example of running a script:
+```brownie run '.\eth smart contract yield\scripts\deploy.py' --network kovan```
 
-brownie run '.\eth smart contract yield\scripts\deploy.py' --network kovan
+Testing on a local network with test scripts:
+(Install) and start ganache:
+```ganache-cli```
+and in another terminal run the test script with a local network flag (if your default network is kovan, for instance)
+```brownie run test ./tests/test_yield.py --network ganache```
 
-
+You may need to add "ganache" as a network to brownie
+```brownie networks list``` (will show current networks)
+```brownie networks list True``` shows parameters for connecting to networks
+```brownie networks add Ethereum ganache host=http://localhost:8545 chainid=1337```
+will add a ganache Ethereum-type network with host at localhost.
+When you run ```ganache-cli``` it says the localhost address:port it is using.
+```brownie test .\tests\test_yield.py --network ganache```

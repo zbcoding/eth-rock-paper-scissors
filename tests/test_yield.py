@@ -3,9 +3,19 @@ from brownie.network.account import LocalAccount
 import pytest
 from brownie import ERC20Basic, network
 from scripts.getAccount import get_account
-import LOCAL_BLOCKCHAIN_ENVIRONMENTS
+
+LOCAL_BLOCKCHAIN_ENVIRONMENTS =\
+[
+    "mainnet-fork",
+    "binance-fork",
+    "matic-fork",
+    "development",
+    "ganache",
+		"hardhat",
+]
 
 @pytest.fixture
+
 def deploy_erc20():
 	#Arrange
 	#Act

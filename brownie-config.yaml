@@ -18,7 +18,7 @@ verify: False
 # set a custom mnemonic for the development network
 networks:
   #set the default deployment network brownie will use
-  default: kovan
+  default: ganache
   #networks
   development:
     keyhash: '0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4'
