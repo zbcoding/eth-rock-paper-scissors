@@ -83,7 +83,6 @@ contract ERC20Basic is IERC20 {
 		//1e8, token has 8 decimals
 	}
 }
- 
 library SafeMath {
   function sub(uint256 a, uint256 b) internal pure returns (uint256) {
     assert(b <= a);
