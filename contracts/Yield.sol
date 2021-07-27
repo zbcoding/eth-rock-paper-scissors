@@ -76,13 +76,12 @@ contract ERC20Basic is IERC20 {
     emit Transfer(owner, buyer, numTokens);
     return true;
   }
-
+	
 	//a funny custom function that sends 1 token to the burn address 0x000...
 	function burnOneToken() external {
 		transfer(0x0000000000000000000000000000000000000000, 1e8);
 		//1e8, token has 8 decimals
 	}
-
 }
  
 library SafeMath {
