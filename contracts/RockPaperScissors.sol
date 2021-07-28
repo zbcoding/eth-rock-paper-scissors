@@ -3,25 +3,50 @@
 pragma solidity ^0.8.0;
  
 import "../interfaces/IERC20.sol";
+import "../interfaces/SafeMath.sol";
 
 contract RockPaperScissors {
   mapping (address => uint8) choice; //map address to 1,2, or 3
   mapping (address => uint256) amount;
   //1 = rock 2 = paper 3 = scissors
-  address address1;
-  address address2;
+  address payable public owner;
+  address payable public address1;
+  address payable public address2;
+  event game(address indexed _player1,
+  address indexed _player2, 
+  string indexed _winAddress, 
+  int256 _totalAmountBet);
+
 
   using SafeMath for uint256;
   
 
 	//constructor(uint256 total) public { for older solidity
-  constructor() {
+  constructor() payable {
   //todo: add set owner so that owner can withdraw fees generated to their address
-
+  owner = payable(msg.sender);
   }
 
   function deposit() payable public {
     //allow deposit
+  }
+  
+  modifier onlyOwner() {
+    require(msg.sender == owner);
+    _;
+  }
+
+  function withdraw() public onlyOwner {
+    // get the amount of Ether stored in this contract
+    uint256 contractAmount = address(this).balance;
+    (bool success,) = owner.call{value: contractAmount}("");
+    require(success, "Failed to send Ether");
+  }
+
+  function transfer(address payable _to, uint _amount) public {
+    // Note that "to" is declared as payable
+    (bool success,) = _to.call{value: _amount}("");
+    require(success, "Failed to send Ether");
   }
 
   function wager(uint256 _amount, uint8 _choice) payable external {
@@ -29,41 +54,76 @@ contract RockPaperScissors {
     //todo: ensure user deposits _amount into the contract
     amount[msg.sender] = _amount;
     choice[msg.sender] = _choice;
-    if (address1 && address2) {
+    require(_choice <=3 && _choice >=1); //1, 2, or 3.
+    if (address1 != address(0) && address2 != address(0)) {
         address1 = address2;
-        address2 = msg.sender;
+        address2 = payable(msg.sender);
     }
     else {
-      address1 = msg.sender;
-      address2 = msg.sender;
+      address1 = payable(msg.sender);
+      address2 = payable(msg.sender);
     }
     }
 
   function callGame() external {
-    uint8 a1 = choice(address1);
-    uint8 a2 = choice(address2);
+    string memory winAddress;
+    uint8 a1 = choice[address1];
+    uint8 a2 = choice[address2];
+    uint256 winAmount = 99*(amount[address1] + amount[address2])/100;
+    require(amount[address1] == amount[address2], "Bet amounts do not match");
+    //logic of rock paper scissors winning/ties
     if (a1 == a2) {
-//todo: add logic of rock paper scissors winning/ties
+    winAddress = "Tie";
+    //pay back both addresses' bet with each contributing to fee
+    transfer(address1, (995*amount[address1])/1000);
+    transfer(address2, (995*amount[address2])/1000);
     }
-
-    //implement pay function to pay an amount to an address
-    //pay back amounts deposited using mapping count variable if ties
-    //pay 99% (1% fee) of both amounts to winner by summing the amounts giving by mapping
+    if (a1==1 && a2==2) { //rock, paper
+      winAddress = toAsciiString(address2);
+      transfer(address2, (winAmount));
+    } 
+    if (a1==1 && a2==3) { //rock, scissors
+      winAddress = toAsciiString(address1);
+      transfer(address1, (winAmount));
+    } 
+    if (a1==2 && a2==1) { //paper, rock
+      winAddress = toAsciiString(address1);
+      transfer(address1, (winAmount));
+    }
+    if (a1==2 && a2==3) { //paper, scissors
+      winAddress = toAsciiString(address2);
+      transfer(address2, (winAmount));
+    }  
+    if (a1==3 && a2==1) { //scissors, rock
+      winAddress = toAsciiString(address2);
+      transfer(address2, (winAmount));
+    } 
+    if (a1==3 && a2==2) { //scissors, paper
+      winAddress = toAsciiString(address1);
+      transfer(address1, (winAmount));
+    } 
+    //event
+    uint256 totalAmount = amount[address1] + amount[address2];
+    emit game(address1, address2, winAddress, int256(totalAmount));
   }
     
+  function toAsciiString(address x) internal pure returns (string memory) {
+    bytes memory s = new bytes(40);
+    for (uint i = 0; i < 20; i++) {
+        bytes1 b = bytes1(uint8(uint(uint160(x)) / (2**(8*(19 - i)))));
+        bytes1 hi = bytes1(uint8(b) / 16);
+        bytes1 lo = bytes1(uint8(b) - 16 * uint8(hi));
+        s[2*i] = char(hi);
+        s[2*i+1] = char(lo);            
+    }
+    return string(s);
+  }
 
+  function char(bytes1 b) internal pure returns (bytes1 c) {
+    if (uint8(b) < 10) return bytes1(uint8(b) + 0x30);
+    else return bytes1(uint8(b) + 0x57);
+  }
 
 }
 
-library SafeMath {
-  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-    assert(b <= a);
-    return a - b;
-  }
- 
-  function add(uint256 a, uint256 b) internal pure returns (uint256) {
-    uint256 c = a + b;
-    assert(c >= a);
-    return c;
-  }
-}
+
