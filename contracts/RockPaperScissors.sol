@@ -1,20 +1,28 @@
 // SPDX-License-Identifier: MIT
 //
 
-//this implementation has the player choices on blockchain, which could be gamed
-
 pragma solidity ^0.8.0;
  
 import "../interfaces/IERC20.sol";
 import "../interfaces/SafeMath.sol";
 
 contract RockPaperScissors {
-  mapping (address => uint8) choice; //map address to 1,2, or 3
-  mapping (address => uint256) amount;
   //1 = rock 2 = paper 3 = scissors
+  enum Choice {None, Rock, Paper, Scissors}
+  bytes32 private encrypted1;
+  bytes32 private encrypted2; //encrypted choice
   address payable public owner;
   address payable public address1;
   address payable public address2;
+  uint256 address1bet;
+  uint256 address2bet;
+  //add event for wager
+  //add event for choice reveal
+  
+  //todo: add timeout so contract refunds if bets are fully placed
+  //uint256 timestart;
+  //uint256 constant timeout = 30 minutes;
+
   event game(address indexed _player1,
   address indexed _player2, 
   string indexed _winAddress, 
@@ -30,9 +38,11 @@ contract RockPaperScissors {
   owner = payable(msg.sender);
   }
 
-  function deposit() payable public {
-    //allow deposit
-  }
+  modifier notAlreadyBet() {
+        require(msg.sender != address1 && msg.sender != address2);
+        _;
+    }
+
   
   modifier onlyOwner() {
     require(msg.sender == owner);
@@ -41,7 +51,7 @@ contract RockPaperScissors {
 
   function withdraw() public onlyOwner {
     // get the amount of Ether stored in this contract
-    uint256 contractAmount = address(this).balance;
+    uint256 contractAmount = address(this).balance - address1bet - address2bet;
     (bool success,) = owner.call{value: contractAmount}("");
     require(success, "Failed to send Ether");
   }
@@ -52,28 +62,63 @@ contract RockPaperScissors {
     require(success, "Failed to send Ether");
   }
 
-  function wager(uint256 _amount, uint8 _choice) payable external {
-    deposit();
-    //todo: ensure user deposits _amount into the contract
-    amount[msg.sender] = _amount;
-    choice[msg.sender] = _choice;
-    require(_choice <=3 && _choice >=1); //1, 2, or 3.
-    if (address1 != address(0) && address2 != address(0)) {
-        address1 = address2;
-        address2 = payable(msg.sender);
+  function wager(bytes32 _encryptedChoice) public payable notAlreadyBet {
+    if (address1 == address(0x0) && _encryptedChoice = 0x0) {
+      address1 = msg.sender;
+      address1bet = msg.value;
+      encrypted1 = _encryptedChoice;
     }
-    else {
-      address1 = payable(msg.sender);
-      address2 = payable(msg.sender);
+    else if (address2==address(0x0) && _encryptedChoice = 0x0) {
+      require(msg.value >= address1bet, "Bet must be at least as much as player 1's bet"); //bets need to at least match in amounts
+      address2 = msg.sender;
+      address2bet = msg.value;
+      encrypted2 = _encryptedChoice;
     }
-    }
+    //add event
+  }
 
+  modifier betSet() {
+    require(address1 == address(0x0) ||
+            address2 == address(0x0) ||
+            encrypted1 == 0x0        ||
+            encrypted2 == 0x0,
+            "Both players have not sent in their bets");
+    _;
+  }
+  //clear choice = Choice + random gen password e.g. Scissors-0a98s7df07asdf0789
+  //front end will hash this for user when they make bet
+  //to reveal later they supply this in clear text and the contract checks the hashes
+  function reveal(string memory clearChoice) public betSet returns (Choice) {
+    require(msg.sender == address1 || msg.sender == address2, "Address not player");
+    bytes32 encryptedChoice = sha256(abi.encodePacked(clearChoice));
+    if (encryptedChoice == encrypted1 && msg.sender = address1) {
+      //save player1 move
+    }
+    else if (encryptedChoice == encrypted2 && msg.sender = address2) {
+      //save player2 move
+    }
+    else if (msg.sender == address1) {
+      //save player1 move as None
+    }
+    else if (msg.sender == address2) {
+      //save player2 move as None
+    }
+    else
+      //save/return None
+  }
+
+  //todo: rewrite this function
   function callGame() external {
+    
     string memory winAddress;
     uint8 a1 = choice[address1];
     uint8 a2 = choice[address2];
     uint256 winAmount = 99*(amount[address1] + amount[address2])/100;
     require(amount[address1] == amount[address2], "Bet amounts do not match");
+    
+    
+    
+    
     //logic of rock paper scissors winning/ties
     if (a1 == a2) {
     winAddress = "Tie";
@@ -108,7 +153,21 @@ contract RockPaperScissors {
     //event
     uint256 totalAmount = amount[address1] + amount[address2];
     emit game(address1, address2, winAddress, int256(totalAmount));
+
+
+    reset();
+
   }
+  
+
+    function reset() private {
+      address1 = address(0x0);
+      address2 = address(0x0);
+      address1bet = 0;
+      address2bet = 0;
+      encrypted1 = 0x0;
+      encrypted2 = 0x0;
+    }
     
   function toAsciiString(address x) internal pure returns (string memory) {
     bytes memory s = new bytes(40);
@@ -127,6 +186,6 @@ contract RockPaperScissors {
     else return bytes1(uint8(b) + 0x57);
   }
 
-}
+}//end contract
 
 
