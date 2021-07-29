@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: MIT
 //
+
+//this implementation has the player choices on blockchain, which could be gamed
+
 pragma solidity ^0.8.0;
  
 import "../interfaces/IERC20.sol";
